@@ -20,7 +20,8 @@ export default function DashboardPage() {
   const [orderActions, setOrderActions] = useState<Record<string, { designer_id?: string }>>({});
   const [actionStatus, setActionStatus] = useState<Record<string, string | null>>({});
 
-  const { data: orders = [], isLoading: ordersLoading, refetch: refetchOrders } = useOrders();
+  const { data: ordersData = [], isLoading: ordersLoading, refetch: refetchOrders } = useOrders();
+  const orders = Array.isArray(ordersData) ? ordersData : (ordersData as any)?.data || [];
 
   const setOrderActionValue = (orderId: string, key: 'designer_id', value: string) => {
     setOrderActions((prev) => ({

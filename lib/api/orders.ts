@@ -6,12 +6,16 @@ import type { Order, OrderStatus, PriceOffer } from '@/lib/types/domain';
 // --- raw calls ---
 
 export const ordersApi = {
-  list: (status?: OrderStatus, page = 1, limit = 50) => {
+  list: async (status?: OrderStatus, page = 1, limit = 50): Promise<Order[]> => {
     const params = new URLSearchParams();
     if (status) params.set('status', status);
     params.set('page', String(page));
     params.set('limit', String(limit));
-    return apiFetch<Order[]>(`/orders?${params.toString()}`);
+    const response = await apiFetch<any>(`/orders?${params.toString()}`);
+    if (response && typeof response === 'object' && 'data' in response && Array.isArray(response.data)) {
+      return response.data;
+    }
+    return Array.isArray(response) ? response : [];
   },
 
   get: (orderId: string) => apiFetch<Order>(`/orders/${orderId}`),

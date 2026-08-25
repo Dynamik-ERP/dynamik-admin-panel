@@ -38,7 +38,8 @@ export default function OrdersQueuePage() {
     return order.created_at || order.createdAt || '';
   };
 
-  const filteredOrders = (orders as any[]).filter((order) => {
+  const ordersList = Array.isArray(orders) ? orders : (orders as any)?.data || [];
+  const filteredOrders = ordersList.filter((order: any) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     const clientName = getClientName(order).toLowerCase();
