@@ -10,7 +10,7 @@ import { useSessionStore } from '@/lib/auth/session-store';
 import { useState, useRef } from 'react';
 import { apiFetch } from '@/lib/api/client';
 import { ToastProvider } from '@/components/shared/toast';
-import { Shield, ShoppingBag, Users, UserCheck, Scissors, Box, Bell, FileText, LogOut } from 'lucide-react';
+import { Shield, ShoppingBag, Users, UserCheck, Scissors, Box, Bell, FileText, LogOut, Menu, X } from 'lucide-react';
 
 interface NavItem {
   name: string;
@@ -32,6 +32,7 @@ const DEPARTMENTS: NavItem[] = [
 ];
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [telegramChatId, setTelegramChatId] = useState('');
   const [telegramStatus, setTelegramStatus] = useState('');
   const router = useRouter();
@@ -72,19 +73,39 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0C0E] text-gray-300 font-sans flex select-none">
+    <div className="min-h-screen bg-[#0B0C0E] text-gray-300 font-sans flex select-none max-w-full overflow-x-hidden">
+      {/* Mobile Drawer Backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/70 z-40 md:hidden backdrop-blur-sm"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* LEFT SIDEBAR */}
-      <aside className="w-[260px] bg-[#12141C] border-r border-[#1F2330] flex flex-col justify-between p-4 flex-shrink-0">
+      <aside className={cn(
+        "fixed md:static inset-y-0 left-0 z-50 w-[260px] h-full bg-[#12141C] border-r border-[#1F2330] flex flex-col justify-between p-4 flex-shrink-0 transition-transform duration-200 ease-in-out",
+        sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+      )}>
         <div className="flex flex-col min-h-0">
-          <Link href="/" className="flex items-center gap-2.5 mb-6 px-2 group cursor-pointer">
-            <div className="w-8 h-8 bg-[#FF6B00] rounded flex items-center justify-center transition-transform group-hover:scale-105">
-              <span className="text-[#0B0C0E] font-black text-sm tracking-tighter">DM</span>
-            </div>
-            <div>
-              <h1 className="text-sm font-bold uppercase tracking-wider text-white group-hover:text-[#FF6B00] transition-colors">DYNAMIK</h1>
-              <p className="text-[10px] font-mono text-gray-500 leading-none">ERP v2.0</p>
-            </div>
-          </Link>
+          <div className="flex items-center justify-between mb-6 px-2">
+            <Link href="/" className="flex items-center gap-2.5 group cursor-pointer">
+              <div className="w-8 h-8 bg-[#FF6B00] rounded flex items-center justify-center transition-transform group-hover:scale-105">
+                <span className="text-[#0B0C0E] font-black text-sm tracking-tighter">DM</span>
+              </div>
+              <div>
+                <h1 className="text-sm font-bold uppercase tracking-wider text-white group-hover:text-[#FF6B00] transition-colors">DYNAMIK</h1>
+                <p className="text-[10px] font-mono text-gray-500 leading-none">ERP v2.0</p>
+              </div>
+            </Link>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="md:hidden p-1 text-gray-400 hover:text-white rounded"
+              aria-label="Close Sidebar"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
           <span className="text-[11px] font-mono uppercase tracking-widest text-gray-600 block px-2 mb-2">
             PORTAL NAVIGATION
@@ -101,6 +122,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                 <Link
                   key={dept.name}
                   href={dept.path}
+                  onClick={() => setSidebarOpen(false)}
                   className={cn(
                     "w-full flex items-center gap-3 px-3 py-2 rounded text-left transition-all",
                     isActive
@@ -158,18 +180,27 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 border-b border-[#1F2330] bg-[#12141C]/50 px-6 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-mono">
-            <span className="text-[#FF6B00] font-semibold">● Admin Portal</span>
-            <span className="text-gray-600">/ System-wide oversight</span>
+      <main className="flex-1 flex flex-col min-w-0 max-w-full overflow-x-hidden">
+        <header className="h-16 border-b border-[#1F2330] bg-[#12141C]/50 px-4 md:px-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSidebarOpen((prev) => !prev)}
+              className="md:hidden p-1.5 -ml-1.5 text-gray-400 hover:text-white rounded hover:bg-[#1F2330] transition-colors"
+              aria-label="Toggle navigation"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div className="flex items-center gap-2 text-xs font-mono">
+              <span className="text-[#FF6B00] font-semibold">● Admin Portal</span>
+              <span className="text-gray-600 hidden sm:inline">/ System-wide oversight</span>
+            </div>
           </div>
           <div className="flex items-center gap-4 font-mono text-xs text-gray-500">
-            <span>LIVE CONNECTED</span>
+            <span className="hidden sm:inline">LIVE CONNECTED</span>
           </div>
         </header>
 
-        <div className="p-6 flex-1 overflow-y-auto">{children}</div>
+        <div className="p-4 md:p-6 flex-1 overflow-y-auto max-w-full overflow-x-hidden">{children}</div>
       </main>
     </div>
   );

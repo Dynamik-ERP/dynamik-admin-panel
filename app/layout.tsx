@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { type PropsWithChildren } from 'react'
 import PwaUpdateBanner from '@/components/pwa/PwaUpdateBanner'
+import OfflineBanner from '@/components/pwa/OfflineBanner'
 import './styles.css'
 
 const APP_NAME = 'Dynamik Admin'
@@ -43,6 +44,7 @@ export default function Layout({ children }: PropsWithChildren) {
   return (
     <html lang="en" className="antialiased">
       <body className="bg-[#0B0C0E] text-gray-300">
+        <OfflineBanner />
         {children}
         <PwaUpdateBanner />
       </body>
