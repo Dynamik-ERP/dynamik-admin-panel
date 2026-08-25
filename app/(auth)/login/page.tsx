@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSessionStore } from '@/lib/auth/session-store';
+import { Eye, EyeOff } from 'lucide-react';
 
 const RAW_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
 const API_URL = (() => {
@@ -14,11 +15,20 @@ const API_URL = (() => {
 
 export default function LoginPage() {
   const router = useRouter();
+  const session = useSessionStore((s) => s.session);
   const setSession = useSessionStore((s) => s.setSession);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Stacked flow: if already logged in as admin, redirect to orders
+  useEffect(() => {
+    if (session?.accessToken) {
+      router.replace('/orders');
+    }
+  }, [session, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,8 +62,7 @@ export default function LoginPage() {
       });
 
       // Use router.push (NOT window.location.href) to preserve the
-      // in-memory Zustand session. A full page reload destroys it,
-      // causing an infinite redirect loop back to /login.
+      // in-memory Zustand session.
       router.push('/orders');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid email or password');
@@ -92,17 +101,27 @@ export default function LoginPage() {
           
           <div>
             <label htmlFor="password" className="block text-xs font-mono text-gray-400 mb-1.5">PASSWORD</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 bg-[#0B0C0E] border border-[#1F2330] rounded-md text-white placeholder-gray-600 focus:outline-none focus:border-[#FF6B00]"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                required
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-3 pr-10 bg-[#0B0C0E] border border-[#1F2330] rounded-md text-white placeholder-gray-600 focus:outline-none focus:border-[#FF6B00]"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-1"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           <button

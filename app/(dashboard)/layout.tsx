@@ -33,6 +33,7 @@ const DEPARTMENTS: NavItem[] = [
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [telegramChatId, setTelegramChatId] = useState('');
   const [telegramStatus, setTelegramStatus] = useState('');
   const router = useRouter();
@@ -54,7 +55,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       console.error('Logout request failed:', error);
     } finally {
       clearSession();
-      router.push('/login');
+      router.push('/');
     }
   };
 
@@ -171,13 +172,40 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           <button
-            onClick={handleLogout}
+            onClick={() => setShowLogoutConfirm(true)}
             className="w-full flex items-center justify-center gap-2 py-1.5 px-3 rounded text-xs font-mono text-gray-400 hover:text-red-400 hover:bg-red-950/20 border border-transparent hover:border-red-900/30 transition text-center"
           >
             <LogOut className="w-3 h-3" /> Sign Out
           </button>
         </div>
       </aside>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4">
+          <div className="bg-[#12141C] border border-[#1F2330] p-6 rounded-lg max-w-sm w-full shadow-2xl space-y-4">
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Confirm Sign Out</h3>
+            <p className="text-xs text-gray-400">Are you sure you want to sign out of the Admin Panel?</p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className="px-3 py-1.5 rounded bg-[#1F2330] text-xs font-mono text-gray-300 hover:bg-[#2A2F40]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowLogoutConfirm(false);
+                  handleLogout();
+                }}
+                className="px-3 py-1.5 rounded bg-red-600 hover:bg-red-500 text-white text-xs font-mono font-bold"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* MAIN CONTENT */}
       <main className="flex-1 flex flex-col min-w-0 max-w-full overflow-x-hidden">
