@@ -8,6 +8,7 @@ import { useAuthGuard } from '@/lib/auth/use-auth-guard';
 import { useSessionRefresh } from '@/lib/auth/use-session-refresh';
 import { useSessionStore } from '@/lib/auth/session-store';
 import { useState, useRef } from 'react';
+import { apiFetch } from '@/lib/api/client';
 import { ToastProvider } from '@/components/shared/toast';
 import { Shield, ShoppingBag, Users, UserCheck, Scissors, Box, Bell, FileText, LogOut } from 'lucide-react';
 
@@ -47,10 +48,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'}/auth/logout`, {
-        method: 'POST',
-        credentials: 'include',
-      });
+      await apiFetch('/auth/logout', { method: 'POST' });
     } catch (error) {
       console.error('Logout request failed:', error);
     } finally {
@@ -62,11 +60,9 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const handleTelegramLink = async () => {
     setTelegramStatus('');
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'}/telegram/link`, {
+      await apiFetch('/telegram/link', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ telegram_chat_id: telegramChatId }),
-        credentials: 'include',
       });
       setTelegramStatus('Telegram linked');
       setTelegramChatId('');

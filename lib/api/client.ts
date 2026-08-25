@@ -1,6 +1,12 @@
 import { useSessionStore } from '@/lib/auth/session-store';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const RAW_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
+const API_BASE = (() => {
+  const url = RAW_URL.trim().replace(/\/+$/, '');
+  if (url.endsWith('/api/v1')) return url;
+  if (url.endsWith('/api')) return `${url}/v1`;
+  return `${url}/api/v1`;
+})();
 
 class ApiError extends Error {
   constructor(public status: number, public body: unknown) {

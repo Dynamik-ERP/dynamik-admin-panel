@@ -8,6 +8,7 @@ import cn from 'clsx';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/ui/data-table';
+import { apiFetch } from '@/lib/api/client';
 
 export default function DashboardPage() {
   useAuthGuard(['admin']);
@@ -52,20 +53,17 @@ export default function DashboardPage() {
     }
     const clientId = order.client?.id || order.clientId || order.id;
     runOrderAction(order.id, 'Assigning designer', async () => {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/clients/${clientId}/assign-designer`, {
+      await apiFetch(`/clients/${clientId}/assign-designer`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ designer_id: designerId }),
-        credentials: 'include',
       });
     });
   };
 
   const handleRouteDesign = (order: any) => {
     runOrderAction(order.id, 'Routing design', async () => {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/orders/${order.id}/route-design`, {
+      await apiFetch(`/orders/${order.id}/route-design`, {
         method: 'POST',
-        credentials: 'include',
       });
       await refetchOrders();
     });

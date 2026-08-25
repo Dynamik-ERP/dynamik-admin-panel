@@ -4,7 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSessionStore } from '@/lib/auth/session-store';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const RAW_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
+const API_URL = (() => {
+  const url = RAW_URL.trim().replace(/\/+$/, '');
+  if (url.endsWith('/api/v1')) return url;
+  if (url.endsWith('/api')) return `${url}/v1`;
+  return `${url}/api/v1`;
+})();
 
 export default function LoginPage() {
   const router = useRouter();
