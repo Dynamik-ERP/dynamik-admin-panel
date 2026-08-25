@@ -1,0 +1,121 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    // "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    // "allowImportingTsExtensions": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": true,
+    "useUnknownInCatchVariables": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUncheckedSideEffectImports": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noUncheckedIndexedAccess": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "@/hooks/*": [
+        "./lib/hooks/*"
+      ],
+      "@/styles/*": [
+        "./app/styles/*"
+      ],
+      "@/integrations/*": [
+        "./lib/integrations/*"
+      ],
+      "@/webgl/*": [
+        "./lib/webgl/*"
+      ],
+      "@/utils/*": [
+        "./lib/utils/*"
+      ],
+      "@/config": [
+        "./lib/config.ts"
+      ],
+      "@/dev": [
+        "./lib/dev"
+      ],
+      "@/dev/*": [
+        "./lib/dev/*"
+      ]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "app/global.d.ts",
+    "app/**/*.{js,jsx,ts,tsx}",
+    "components/shared/**/*.{js,jsx,ts,tsx}",
+    "components/orders/**/*.{js,jsx,ts,tsx}",
+    "lib/api/**/*.{js,jsx,ts,tsx}",
+    "lib/auth/**/*.{js,jsx,ts,tsx}",
+    "lib/realtime/**/*.{js,jsx,ts,tsx}",
+    "lib/types/**/*.{js,jsx,ts,tsx}",
+    "middleware.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "lib/webgl",
+    "components/effects",
+    "components/layout/lenis",
+    "components/layout/wrapper",
+    "components/layout/header",
+    "components/layout/footer",
+    "components/product",
+    "components/react-scan-provider.tsx",
+    "lib/utils/types.d.ts",
+    "lib/utils/css.d.ts",
+    "app/api",
+    "app/manifest.ts",
+    "components/ui/*.stories.tsx",
+    "lib/**/*.test.ts",
+    "lib/integrations",
+    "lib/hooks/use-device-detection.ts",
+    "lib/hooks/use-device-detection.test.ts",
+    "lib/utils/raf.ts",
+    "components/ui/accordion",
+    "components/ui/alert-dialog",
+    "components/ui/checkbox",
+    "components/ui/fold",
+    "components/ui/marquee",
+    "components/ui/menu",
+    "components/ui/sanity-image",
+    "components/ui/scrollbar",
+    "components/ui/select",
+    "components/ui/switch",
+    "components/ui/tabs",
+    "components/ui/tooltip",
+    "components/ui/form",
+    "components/ui/link",
+    "components/ui/image",
+    "components/ui/toast",
+    "lib/dev",
+    "next.config.ts",
+    "lib/hooks/index.ts"
+  ]
+}
