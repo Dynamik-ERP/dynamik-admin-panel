@@ -2,7 +2,7 @@
 
 import cn from 'clsx';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthGuard } from '@/lib/auth/use-auth-guard';
 import { useSessionRefresh } from '@/lib/auth/use-session-refresh';
@@ -36,7 +36,6 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [telegramChatId, setTelegramChatId] = useState('');
   const [telegramStatus, setTelegramStatus] = useState('');
-  const router = useRouter();
   
   useSessionRefresh();
   useAuthGuard(['admin']);
@@ -55,7 +54,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       console.error('Logout request failed:', error);
     } finally {
       clearSession();
-      router.push('/');
+      window.location.href = '/login';
     }
   };
 

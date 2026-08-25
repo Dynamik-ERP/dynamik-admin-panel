@@ -1,15 +1,164 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuthGuard } from '@/lib/auth/use-auth-guard';
 import { useOrders } from '@/lib/api/orders';
-import { RefreshCcw } from 'lucide-react';
+import { RefreshCcw, ExternalLink, FileText } from 'lucide-react';
 import cn from 'clsx';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/ui/data-table';
 import { apiFetch } from '@/lib/api/client';
 import { useToast } from '@/components/shared/toast';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
+
+const EXT_COLORS: Record<string, string> = {
+  pdf: '#EF4444',
+  png: '#10B981',
+  jpg: '#10B981',
+  jpeg: '#10B981',
+  dwg: '#38BDF8',
+  dxf: '#8B5CF6',
+};
+
+function getFileExt(url: string): string {
+  return url?.split('.')?.pop()?.toLowerCase()?.replace(/[^a-z0-9]/g, '') || '';
+}
+
+function getFileViewUrl(fileUrl: string): string {
+  if (!fileUrl || fileUrl === 'No file attached') return '';
+  if (fileUrl.startsWith('/uploads')) {
+    return `${API_BASE}${fileUrl}`.replace(/\/api\/v1\/api\/v1/g, '/api/v1');
+  }
+  return fileUrl;
+}
+
+function DesignsPanel() {
+  const { showToast } = useToast();
+  const [designs, setDesigns] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchDesigns = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await apiFetch<any[]>('/designs');
+      setDesigns(Array.isArray(data) ? data : []);
+    } catch {
+      setDesigns([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchDesigns(); }, [fetchDesigns]);
+
+  const handleApprove = async (designId: string) => {
+    try {
+      await apiFetch(`/designs/${designId}/approve`, { method: 'POST' });
+      showToast('success', 'Design approved');
+      fetchDesigns();
+    } catch {
+      showToast('error', 'Failed to approve design');
+    }
+  };
+
+  const handleRequestRevision = async (designId: string) => {
+    try {
+      await apiFetch(`/designs/${designId}/request-revision`, { method: 'POST' });
+      showToast('success', 'Revision requested');
+      fetchDesigns();
+    } catch {
+      showToast('error', 'Failed to request revision');
+    }
+  };
+
+  return (
+    <div className="bg-[#12141C] border border-[#1F2330] rounded p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h3 className="text-base font-bold text-white">Submitted Designs</h3>
+          <p className="text-xs text-gray-500 font-mono mt-0.5">View and manage design files (DWG, DXF, PDF, PNG)</p>
+        </div>
+        <Button variant="outline" onClick={fetchDesigns} disabled={loading}>
+          <RefreshCcw className={cn("w-3 h-3 mr-2", loading && "animate-spin")} />
+          {loading ? 'Syncing...' : 'Refresh'}
+        </Button>
+      </div>
+
+      <DataTable headers={['Design ID', 'Order', 'Designer', 'Status', 'File', 'Created', 'Actions']}>
+        {loading ? (
+          <tr><td colSpan={7} className="p-4 text-center text-xs text-gray-500 font-mono">Loading designs...</td></tr>
+        ) : designs.length === 0 ? (
+          <tr><td colSpan={7} className="p-4 text-center text-xs text-gray-500 font-mono">No designs submitted yet</td></tr>
+        ) : (
+          designs.map((design: any) => {
+            const ext = getFileExt(design.file_url || '');
+            const color = EXT_COLORS[ext] || '#6B7280';
+            const viewUrl = getFileViewUrl(design.file_url || '');
+            const hasFile = viewUrl && design.file_url !== 'No file attached';
+
+            return (
+              <tr key={design.id} className="hover:bg-[#161922]/50 text-gray-300 border-b border-[#1F2330]">
+                <td className="p-3 text-white font-mono text-xs">{design.id?.substring(0, 8).toUpperCase()}...</td>
+                <td className="p-3 text-gray-400 font-mono text-xs">
+                  {design.order?.client?.full_name || design.order?.client?.fullName || design.order_id?.substring(0, 8) || '—'}
+                </td>
+                <td className="p-3 text-gray-400 text-xs">
+                  {design.designer?.full_name || design.designer?.fullName || design.designer_id?.substring(0, 8) || '—'}
+                </td>
+                <td className="p-3">
+                  <Badge variant={design.status === 'approved' ? 'success' : design.status === 'submitted' ? 'warning' : 'default'}>
+                    {design.status?.toUpperCase()}
+                  </Badge>
+                </td>
+                <td className="p-3">
+                  {hasFile ? (
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase"
+                        style={{ backgroundColor: `${color}20`, color, border: `1px solid ${color}40` }}
+                      >
+                        {ext}
+                      </span>
+                      <a
+                        href={viewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#FF6B00] hover:text-[#E05E00] text-xs font-mono underline flex items-center gap-1"
+                      >
+                        <ExternalLink className="w-3 h-3" /> View
+                      </a>
+                    </div>
+                  ) : (
+                    <span className="text-gray-600 text-xs flex items-center gap-1"><FileText className="w-3 h-3" /> No file</span>
+                  )}
+                </td>
+                <td className="p-3 text-gray-500 text-xs">{design.created_at ? new Date(design.created_at).toLocaleDateString() : '—'}</td>
+                <td className="p-3">
+                  <div className="flex gap-2">
+                    {design.status === 'submitted' && (
+                      <>
+                        <Button variant="outline" size="sm" onClick={() => handleApprove(design.id)}>
+                          Approve
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => handleRequestRevision(design.id)}>
+                          Revision
+                        </Button>
+                      </>
+                    )}
+                    {design.status === 'approved' && <span className="text-green-500 text-xs font-mono">✓ Approved</span>}
+                    {design.status === 'revision_requested' && <span className="text-yellow-500 text-xs font-mono">↻ Revision Pending</span>}
+                  </div>
+                </td>
+              </tr>
+            );
+          })
+        )}
+      </DataTable>
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   useAuthGuard(['admin']);
@@ -222,11 +371,7 @@ export default function DashboardPage() {
       )}
 
       {activeTab === 'Designs' && (
-        <div className="bg-[#12141C] border border-[#1F2330] rounded p-6">
-          <div className="text-center py-12 text-gray-500 text-sm">
-            Designs tab coming soon
-          </div>
-        </div>
+        <DesignsPanel />
       )}
 
       {activeTab === 'Access Codes' && (
