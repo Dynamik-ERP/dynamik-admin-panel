@@ -21,7 +21,8 @@ export default function CuttingListsPage() {
   useAuthGuard(['admin']);
   const [page, setPage] = useState(1);
   const limit = 20;
-  const { data: cuttingListsData, isLoading, isError, error, refetch } = useCuttingLists(page, limit);
+  const { data: cuttingListsData, isLoading, isFetching, isError, error, refetch } = useCuttingLists(page, limit);
+  const isRefreshing = isLoading || isFetching;
   const [declineReasons, setDeclineReasons] = useState<Record<string, string>>({});
   const approveMutation = useApproveCuttingList();
   const declineMutation = useDeclineCuttingList();
@@ -83,11 +84,15 @@ export default function CuttingListsPage() {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => refetch()}
-              disabled={isLoading}
+              onClick={async () => {
+                const res = await refetch();
+                if (res.isSuccess) showToast('success', 'Cutting lists refreshed');
+                else showToast('error', 'Failed to refresh cutting lists');
+              }}
+              disabled={isRefreshing}
             >
-              <RefreshCcw className={cn("w-3 h-3 mr-2", isLoading && "animate-spin")} />
-              {isLoading ? "Syncing..." : "Refresh"}
+              <RefreshCcw className={cn("w-3 h-3 mr-2", isRefreshing && "animate-spin")} />
+              {isRefreshing ? "Syncing..." : "Refresh"}
             </Button>
           </div>
         </div>

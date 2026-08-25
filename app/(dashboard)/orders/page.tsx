@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCcw } from 'lucide-react';
 import Link from 'next/link';
 import cn from 'clsx';
+import { useToast } from '@/components/shared/toast';
 import type { OrderStatus } from '@/lib/types/domain';
 
 const STATUS_OPTIONS: { value: OrderStatus | undefined; label: string }[] = [
@@ -22,9 +23,11 @@ const STATUS_OPTIONS: { value: OrderStatus | undefined; label: string }[] = [
 
 export default function OrdersQueuePage() {
   useAuthGuard(['admin']);
+  const { showToast } = useToast();
   const [statusFilter, setStatusFilter] = useState<OrderStatus | undefined>();
   const [searchQuery, setSearchQuery] = useState('');
-  const { data: orders = [], isLoading, refetch } = useOrders(statusFilter);
+  const { data: orders = [], isLoading, isFetching, refetch } = useOrders(statusFilter);
+  const isRefreshing = isLoading || isFetching;
 
   const getClientName = (order: any) => {
     return order.client?.full_name || order.client?.fullName || order.clientName || '—';
@@ -74,11 +77,15 @@ export default function OrdersQueuePage() {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => refetch()}
-              disabled={isLoading}
+              onClick={async () => {
+                const res = await refetch();
+                if (res.isSuccess) showToast('success', 'Orders refreshed');
+                else showToast('error', 'Failed to refresh orders');
+              }}
+              disabled={isRefreshing}
             >
-              <RefreshCcw className={cn("w-3 h-3 mr-2", isLoading && "animate-spin")} />
-              {isLoading ? "Syncing..." : "Refresh"}
+              <RefreshCcw className={cn("w-3 h-3 mr-2", isRefreshing && "animate-spin")} />
+              {isRefreshing ? "Syncing..." : "Refresh"}
             </Button>
           </div>
         </div>

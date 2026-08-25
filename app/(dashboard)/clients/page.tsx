@@ -7,10 +7,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { RefreshCcw } from 'lucide-react';
 import cn from 'clsx';
+import { useToast } from '@/components/shared/toast';
 
 export default function ClientsListPage() {
   useAuthGuard(['admin']);
-  const { data: clientsData, isLoading, isError, error, refetch } = useClients();
+  const { showToast } = useToast();
+  const { data: clientsData, isLoading, isFetching, isError, error, refetch } = useClients();
+  const isRefreshing = isLoading || isFetching;
 
   const clients = Array.isArray(clientsData) ? clientsData : [];
 
@@ -31,11 +34,15 @@ export default function ClientsListPage() {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => refetch()}
-              disabled={isLoading}
+              onClick={async () => {
+                const res = await refetch();
+                if (res.isSuccess) showToast('success', 'Clients refreshed');
+                else showToast('error', 'Failed to refresh clients');
+              }}
+              disabled={isRefreshing}
             >
-              <RefreshCcw className={cn("w-3 h-3 mr-2", isLoading && "animate-spin")} />
-              {isLoading ? "Syncing..." : "Refresh"}
+              <RefreshCcw className={cn("w-3 h-3 mr-2", isRefreshing && "animate-spin")} />
+              {isRefreshing ? "Syncing..." : "Refresh"}
             </Button>
           </div>
         </div>

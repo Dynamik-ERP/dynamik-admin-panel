@@ -21,12 +21,12 @@ const AVAILABLE_ROLES: { value: UserRole; label: string }[] = [
   { value: 'cnc', label: 'CNC' },
   { value: 'edge_banding', label: 'Edge Banding' },
   { value: 'qc', label: 'Quality Control' },
-  { value: 'client', label: 'Client' },
 ];
 
 export default function StaffListPage() {
   useAuthGuard(['admin']);
-  const { data: staffData, isLoading, isError, error, refetch } = useStaff();
+  const { data: staffData, isLoading, isFetching, isError, error, refetch } = useStaff();
+  const isRefreshing = isLoading || isFetching;
   const updateMutation = useUpdateUser();
   const deactivateMutation = useDeactivateUser();
   const activateMutation = useActivateUser();
@@ -35,7 +35,10 @@ export default function StaffListPage() {
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editData, setEditData] = useState({ fullName: '', email: '', role: 'admin' as UserRole });
 
-  const staff = Array.isArray(staffData) ? staffData : [];
+  // Exclude clients from staff management (clients have their own dedicated portal and tab)
+  const staff = (Array.isArray(staffData) ? staffData : []).filter(
+    (member: any) => member.role !== 'client'
+  );
 
   const handleDeactivate = (userId: string, userName: string) => {
     confirm(
@@ -119,11 +122,15 @@ export default function StaffListPage() {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => refetch()}
-              disabled={isLoading}
+              onClick={async () => {
+                const res = await refetch();
+                if (res.isSuccess) showToast('success', 'Staff list refreshed');
+                else showToast('error', 'Failed to refresh staff');
+              }}
+              disabled={isRefreshing}
             >
-              <RefreshCcw className={cn("w-3 h-3 mr-2", isLoading && "animate-spin")} />
-              {isLoading ? "Syncing..." : "Refresh"}
+              <RefreshCcw className={cn("w-3 h-3 mr-2", isRefreshing && "animate-spin")} />
+              {isRefreshing ? "Syncing..." : "Refresh"}
             </Button>
           </div>
         </div>

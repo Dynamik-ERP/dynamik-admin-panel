@@ -18,7 +18,8 @@ const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'succe
 
 export default function BomPage() {
   useAuthGuard(['admin']);
-  const { data: bomData, isLoading, isError, error, refetch } = useBom();
+  const { data: bomData, isLoading, isFetching, isError, error, refetch } = useBom();
+  const isRefreshing = isLoading || isFetching;
   const approveMutation = useApproveBom();
   const { showToast } = useToast();
   const { confirm, ConfirmDialogComponent } = useConfirmDialog();
@@ -53,11 +54,15 @@ export default function BomPage() {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => refetch()}
-              disabled={isLoading}
+              onClick={async () => {
+                const res = await refetch();
+                if (res.isSuccess) showToast('success', 'BOMs refreshed');
+                else showToast('error', 'Failed to refresh BOMs');
+              }}
+              disabled={isRefreshing}
             >
-              <RefreshCcw className={cn("w-3 h-3 mr-2", isLoading && "animate-spin")} />
-              {isLoading ? "Syncing..." : "Refresh"}
+              <RefreshCcw className={cn("w-3 h-3 mr-2", isRefreshing && "animate-spin")} />
+              {isRefreshing ? "Syncing..." : "Refresh"}
             </Button>
           </div>
         </div>

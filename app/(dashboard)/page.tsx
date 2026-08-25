@@ -9,9 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/ui/data-table';
 import { apiFetch } from '@/lib/api/client';
+import { useToast } from '@/components/shared/toast';
 
 export default function DashboardPage() {
   useAuthGuard(['admin']);
+  const { showToast } = useToast();
 
   const [activeTab, setActiveTab] = useState('Orders Queue');
   const [activeSubTab, setActiveSubTab] = useState('Orders');
@@ -20,7 +22,8 @@ export default function DashboardPage() {
   const [orderActions, setOrderActions] = useState<Record<string, { designer_id?: string }>>({});
   const [actionStatus, setActionStatus] = useState<Record<string, string | null>>({});
 
-  const { data: ordersData = [], isLoading: ordersLoading, refetch: refetchOrders } = useOrders();
+  const { data: ordersData = [], isLoading: ordersLoading, isFetching: ordersFetching, refetch: refetchOrders } = useOrders();
+  const isRefreshingOrders = ordersLoading || ordersFetching;
   const orders = Array.isArray(ordersData) ? ordersData : (ordersData as any)?.data || [];
 
   const setOrderActionValue = (orderId: string, key: 'designer_id', value: string) => {
@@ -128,11 +131,15 @@ export default function DashboardPage() {
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
-                    onClick={() => refetchOrders()}
-                    disabled={ordersLoading}
+                    onClick={async () => {
+                      const res = await refetchOrders();
+                      if (res.isSuccess) showToast('success', 'Orders refreshed');
+                      else showToast('error', 'Failed to refresh orders');
+                    }}
+                    disabled={isRefreshingOrders}
                   >
-                    <RefreshCcw className={cn("w-3 h-3 mr-2", ordersLoading && "animate-spin")} />
-                    {ordersLoading ? "Syncing..." : "Refresh"}
+                    <RefreshCcw className={cn("w-3 h-3 mr-2", isRefreshingOrders && "animate-spin")} />
+                    {isRefreshingOrders ? "Syncing..." : "Refresh"}
                   </Button>
                 </div>
               </div>
