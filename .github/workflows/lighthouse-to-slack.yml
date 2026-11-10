@@ -63,7 +63,7 @@ jobs:
       - name: Get Vercel Preview URL
         id: vercel_url
         if: steps.vercel_info.outputs.skip != 'true'
-        uses: zentered/vercel-preview-url@v1.4.0
+        uses: zentered/vercel-preview-url@v1.4.1
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         with:
